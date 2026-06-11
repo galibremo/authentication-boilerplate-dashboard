@@ -10,7 +10,42 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import {
+	AlertCircle,
+	CheckCircle2,
+	CloudUpload,
+	File,
+	FileJson,
+	FileSpreadsheet,
+	FileText,
+	Loader2,
+	Trash2,
+	X
+} from "lucide-react";
+import { useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import { useKnowledgeBaseUploader } from "../hooks/use-knowledge-base-uploader";
+
+const ACCEPTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".csv", ".json", ".md"];
+
+function getFileIcon(name: string) {
+	const ext = name.split(".").pop()?.toLowerCase();
+	const cls = "h-4 w-4 shrink-0 text-muted-foreground";
+	if (ext === "json") return <FileJson className={cls} />;
+	if (ext === "csv") return <FileSpreadsheet className={cls} />;
+	if (ext === "txt" || ext === "md") return <FileText className={cls} />;
+	return <File className={cls} />;
+}
+
+function formatSize(bytes: number) {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function KnowledgeBaseUploader() {
 	const {
@@ -18,7 +53,6 @@ export default function KnowledgeBaseUploader() {
 		status,
 		message,
 		showClearDialog,
-		inputRef,
 		addFiles,
 		removeFile,
 		handleUpload,
@@ -27,45 +61,78 @@ export default function KnowledgeBaseUploader() {
 		busy
 	} = useKnowledgeBaseUploader();
 
+	const onDrop = useCallback((accepted: File[]) => addFiles(accepted), [addFiles]);
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: Object.fromEntries(
+			ACCEPTED_EXTENSIONS.map(ext => [
+				ext === ".md" ? "text/markdown" : `application/${ext.slice(1)}`,
+				[ext]
+			])
+		),
+		multiple: true,
+		disabled: busy
+	});
+
+	const isUploading = status === "uploading";
+	const isClearing = status === "clearing";
+	const isSuccess = status === "success";
+
 	return (
-		<div className="mx-auto max-w-lg p-6">
+		<div className="mx-auto w-full max-w-lg space-y-6">
 			{/* Drop zone */}
 			<div
-				onClick={() => inputRef.current?.click()}
-				onDragOver={e => e.preventDefault()}
-				onDrop={e => {
-					e.preventDefault();
-					addFiles([...e.dataTransfer.files]);
-				}}
-				className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition hover:bg-gray-50"
+				{...getRootProps()}
+				className={cn(
+					"bg-accent/50 flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed py-20 text-center transition-colors",
+					isDragActive ? "border-border bg-accent" : "border-border/90 hover:border-border",
+					busy && "pointer-events-none opacity-50"
+				)}
 			>
-				<p className="text-sm text-gray-500">Drop files here or click to browse</p>
-				<p className="mt-1 text-xs text-gray-400">.txt, .pdf, .docx, .csv, .json</p>
+				<input {...getInputProps()} />
+				<CloudUpload className="text-muted-foreground/60 h-8 w-8" strokeWidth={1.5} />
+				<div>
+					<p className="text-foreground text-sm font-medium">
+						{isDragActive ? "Release to add files" : "Drop files here or click to browse"}
+					</p>
+					<p className="text-muted-foreground mt-1 text-xs">Supports multiple files at once</p>
+				</div>
+				<div className="flex flex-wrap justify-center gap-1.5">
+					{ACCEPTED_EXTENSIONS.map(ext => (
+						<Badge
+							key={ext}
+							variant="secondary"
+							className="rounded-full px-2.5 py-0.5 text-[11px] font-normal"
+						>
+							{ext}
+						</Badge>
+					))}
+				</div>
 			</div>
-
-			<input
-				ref={inputRef}
-				type="file"
-				multiple
-				accept=".txt,.pdf,.docx,.csv,.json,.md"
-				className="hidden"
-				onChange={e => addFiles([...e.target.files!])}
-			/>
 
 			{/* File list */}
 			{files.length > 0 && (
-				<ul className="mt-4 space-y-2">
+				<ul className="space-y-1.5">
 					{files.map(f => (
 						<li
 							key={f.name}
-							className="flex items-center justify-between rounded bg-gray-50 px-3 py-2 text-sm"
+							className="border-border/40 bg-muted/40 flex items-center gap-3 rounded-lg border px-3 py-2"
 						>
-							<span className="truncate">{f.name}</span>
+							{getFileIcon(f.name)}
+							<span className="text-foreground flex-1 truncate text-sm" title={f.name}>
+								{f.name}
+							</span>
+							<span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+								{formatSize(f.size)}
+							</span>
 							<button
 								onClick={() => removeFile(f.name)}
-								className="ml-4 text-xs text-gray-400 hover:text-red-500"
+								disabled={busy}
+								aria-label={`Remove ${f.name}`}
+								className="text-muted-foreground hover:text-destructive shrink-0 rounded p-0.5 transition-colors disabled:pointer-events-none"
 							>
-								remove
+								<X className="h-3.5 w-3.5" />
 							</button>
 						</li>
 					))}
@@ -74,35 +141,67 @@ export default function KnowledgeBaseUploader() {
 
 			{/* Status message */}
 			{message && (
-				<p className={`mt-3 text-sm ${status === "success" ? "text-green-600" : "text-red-500"}`}>
-					{message}
-				</p>
+				<div
+					className={cn(
+						"flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm",
+						isSuccess
+							? "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400"
+							: "border-destructive/30 bg-destructive/5 text-destructive"
+					)}
+				>
+					{isSuccess ? (
+						<CheckCircle2 className="h-4 w-4 shrink-0" />
+					) : (
+						<AlertCircle className="h-4 w-4 shrink-0" />
+					)}
+					<span>{message}</span>
+				</div>
 			)}
 
+			{/* Progress bar (visible only while uploading) */}
+			{isUploading && <Progress value={undefined} className="h-0.75" />}
+
 			{/* Upload button */}
-			<button
-				onClick={handleUpload}
-				disabled={!files.length || busy}
-				className="mt-4 w-full rounded bg-black px-4 py-2 text-sm text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
-			>
-				{status === "uploading" ? "Uploading…" : "Upload to ChromaDB"}
-			</button>
+			<Button onClick={handleUpload} disabled={!files.length || busy} className="w-full gap-2">
+				{isUploading ? (
+					<>
+						<Loader2 className="h-4 w-4 animate-spin" />
+						Uploading…
+					</>
+				) : (
+					<>
+						<CloudUpload className="h-4 w-4" />
+						Upload to ChromaDB
+					</>
+				)}
+			</Button>
 
 			{/* Divider */}
-			<div className="my-4 flex items-center gap-3">
-				<div className="h-px flex-1 bg-gray-200" />
-				<span className="text-xs text-gray-400">database</span>
-				<div className="h-px flex-1 bg-gray-200" />
+			<div className="flex items-center gap-3">
+				<div className="bg-border/50 h-px flex-1" />
+				<span className="text-muted-foreground text-[11px]">collection</span>
+				<div className="bg-border/50 h-px flex-1" />
 			</div>
 
 			{/* Clear button */}
-			<button
+			<Button
+				variant="outline"
 				onClick={() => setShowClearDialog(true)}
 				disabled={busy}
-				className="w-full rounded border border-red-300 px-4 py-2 text-sm text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+				className="border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive w-full gap-2"
 			>
-				{status === "clearing" ? "Clearing…" : "Clear ChromaDB Collection"}
-			</button>
+				{isClearing ? (
+					<>
+						<Loader2 className="h-4 w-4 animate-spin" />
+						Clearing…
+					</>
+				) : (
+					<>
+						<Trash2 className="h-4 w-4" />
+						Clear ChromaDB collection
+					</>
+				)}
+			</Button>
 
 			{/* Clear confirmation dialog */}
 			<AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
@@ -110,12 +209,17 @@ export default function KnowledgeBaseUploader() {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Clear ChromaDB collection?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will permanently delete all chunks from office_dataset.
+							This will permanently delete all chunks from{" "}
+							<span className="text-foreground font-medium">office_dataset</span>. This action
+							cannot be undone.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={handleClearConfirm} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={handleClearConfirm}
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+						>
 							Yes, clear it
 						</AlertDialogAction>
 					</AlertDialogFooter>
