@@ -64,7 +64,9 @@ export const apiRoute = {
 	emailTemplate: (publicId: string) => `/email-templates/${publicId}`,
 	emailLogs: "/email-logs",
 	emailLog: (logId: string) => `/email-logs/${logId}`,
-	emailLogResend: (logId: string) => `/email-logs/${logId}/resend`
+	emailLogResend: (logId: string) => `/email-logs/${logId}/resend`,
+	// ai features
+	knowledgeBase: (id: string) => `/webhook/${id}`
 } as const;
 
 const DEFAULT_LOGIN_REDIRECT = route.private.dashboard;

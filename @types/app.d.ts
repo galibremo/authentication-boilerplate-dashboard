@@ -27,3 +27,7 @@ interface PaginatedData<T> {
 }
 
 type PaginatedApiResponse<T> = ApiResponse<PaginatedData<T>>;
+
+type KeyedObject = {
+	[key: string]: string | number | KeyedObject | any;
+};
