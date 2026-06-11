@@ -1,7 +1,9 @@
 import {
+	AiBrain03Icon,
 	Audit01Icon,
 	ComputerProtectionIcon,
 	DashboardSquare01Icon,
+	Key02Icon,
 	Mail01Icon,
 	MailSettingIcon,
 	Settings02Icon,
@@ -37,6 +39,19 @@ const navPlatformItem: NavItemProps[] = [
 		url: route.private.users,
 		icon: UserGroupIcon,
 		roles: ["ADMIN", "SUPER_ADMIN"]
+	}
+];
+
+const navAiItem: NavItemProps[] = [
+	{
+		title: "Knowledge Base",
+		url: route.private.knowledgeBase,
+		icon: AiBrain03Icon
+	},
+	{
+		title: "Api Keys",
+		url: route.private.apiKeys,
+		icon: Key02Icon
 	}
 ];
 
@@ -79,4 +94,4 @@ const navSMTPItem: NavItemProps[] = [
 	}
 ];
 
-export { navLogsItem, navPlatformItem, navSMTPItem, navSystemItem, userItems };
+export { navLogsItem, navPlatformItem, navSMTPItem, navSystemItem, userItems,navAiItem };

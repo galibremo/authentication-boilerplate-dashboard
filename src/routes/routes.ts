@@ -13,7 +13,11 @@ export const route = {
 		smtpProviders: "/smtp-providers",
 		emailTemplates: "/email-templates",
 		emailTemplateEdit: (publicId: string) => `/email-templates/${publicId}/edit`,
-		emailLogs: "/email-logs"
+		emailLogs: "/email-logs",
+
+		// ai-features
+		knowledgeBase: "/knowledge-base",
+		apiKeys: "/api-keys"
 	},
 	protected: {
 		login: "/login",
@@ -69,5 +73,3 @@ const appRoutePrefix = process.env.NEXT_PUBLIC_FRONTEND_URL;
 const apiRoutePrefix = process.env.NEXT_PUBLIC_API_URL;
 
 export { apiRoutePrefix, appRoutePrefix, DEFAULT_LOGIN_REDIRECT };
-
-
