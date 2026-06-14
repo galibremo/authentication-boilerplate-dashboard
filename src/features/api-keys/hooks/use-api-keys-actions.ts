@@ -31,8 +31,7 @@ export function useApiKeysActions(apiKeys: ApiKeys) {
 		(values: CreateApiKeysFormValues) => {
 			updateApiKeys({
 				id: apiKeys.id,
-				name: values.name,
-				key: values.key
+				name: values.name
 			});
 			setEditDialogOpen(false);
 		},
@@ -66,8 +65,7 @@ export function useApiKeysActions(apiKeys: ApiKeys) {
 
 function createEditValues(apiKeys: ApiKeys): CreateApiKeysFormValues {
 	return {
-		name: apiKeys.name ?? "",
-		key: apiKeys.key ?? ""
+		name: apiKeys.name ?? ""
 	};
 }
 

@@ -1,4 +1,3 @@
-import { useUploadKnowledgeBaseMutation } from "@/features/knowledge-base/actions/knowledge-base.mutations";
 import { useRef, useState } from "react";
 
 type Status = "idle" | "uploading" | "clearing" | "success" | "error";
@@ -9,9 +8,6 @@ export function useKnowledgeBaseUploader() {
 	const [message, setMessage] = useState("");
 	const [showClearDialog, setShowClearDialog] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
-
-	const { uploadKnowledgeBaseAsynchronously, uploadKnowledgeBaseError } =
-		useUploadKnowledgeBaseMutation();
 
 	const addFiles = (incoming: File[]) => {
 		setFiles(prev => {
@@ -30,11 +26,22 @@ export function useKnowledgeBaseUploader() {
 		setMessage("");
 
 		try {
+			// Upload files one by one so n8n processes each separately
 			for (const file of files) {
 				const formData = new FormData();
-				formData.append("data", file);
+				formData.append("data", file); // "data" matches Webhook1 binary property
 
-				await uploadKnowledgeBaseAsynchronously(formData);
+				const res = await fetch("/api/n8n-upload", {
+					method: "POST",
+					body: formData
+				});
+
+				if (!res.ok) {
+					const errData = await res.json().catch(() => ({}));
+					setStatus("error");
+					setMessage(errData?.message || `Upload failed for ${file.name}`);
+					return; // Stop on first failure
+				}
 			}
 
 			setStatus("success");
@@ -42,8 +49,7 @@ export function useKnowledgeBaseUploader() {
 			setFiles([]);
 		} catch (err: any) {
 			setStatus("error");
-			console.log(uploadKnowledgeBaseError);
-			setMessage(err?.message || `Upload failed`);
+			setMessage(`Could not reach N8N: ${err.message}`);
 		}
 	};
 
@@ -90,3 +96,4 @@ export function useKnowledgeBaseUploader() {
 		busy
 	};
 }
+

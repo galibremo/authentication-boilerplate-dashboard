@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/api/client";
-import { apiRoute } from "@/routes/routes";
 
 import {
 	ApiKeys,
@@ -10,6 +9,7 @@ import {
 } from "@/features/api-keys/types/api-keys.types";
 import { createUserListQuery } from "@/features/users/schemas/users-api.schema";
 import type { DeleteUserInput, DeleteUserResponse } from "@/features/users/types/users.types";
+import { apiRoute } from "@/routes/routes";
 
 export async function apiKeysList(filters: ApiKeysListQuery): Promise<ApiKeysListResponse> {
 	return apiClient<ApiKeysListResponse>({
@@ -48,3 +48,4 @@ export async function deleteApiKeys({ id }: DeleteUserInput): Promise<DeleteUser
 		url: apiRoute.apiKey(id)
 	});
 }
+

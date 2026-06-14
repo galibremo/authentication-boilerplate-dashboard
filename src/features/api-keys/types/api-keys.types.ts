@@ -28,7 +28,6 @@ export interface CreateApiKeys {
 export interface UpdateApiKeys {
 	id: string;
 	name: string;
-	key: string;
 }
 
 export interface DeleteApiKeysInput {
