@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useCreateApiKeysMutation } from "@/features/api-keys/actions/api-keys.mutations";
+import { ApiKeysFormFields } from "@/features/api-keys/components/api-keys-form-fields";
 import {
 	CreateApiKeysFormValues,
 	createApiKeysFormSchema
@@ -55,7 +56,11 @@ export function CreateApiKeysDialog() {
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<Button type="button" onClick={() => handleOpenChange(true)} disabled>
+			<Button
+				type="button"
+				onClick={() => handleOpenChange(true)}
+				disabled={isCreateApiKeysLoading}
+			>
 				<HugeiconsIcon icon={PlusSignCircleIcon} data-icon="inline-start" />
 				Create API Key
 			</Button>
@@ -66,7 +71,7 @@ export function CreateApiKeysDialog() {
 							<DialogTitle>Create API Key</DialogTitle>
 							<DialogDescription>Create a new API key for your application.</DialogDescription>
 						</DialogHeader>
-						{/* form */}
+						<ApiKeysFormFields idPrefix="create-api-keys" disabled={isCreateApiKeysLoading} />
 						<DialogFooter>
 							<DialogClose asChild>
 								<Button type="button" variant="outline">

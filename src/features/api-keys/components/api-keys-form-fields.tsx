@@ -27,7 +27,7 @@ export function ApiKeysFormFields({ idPrefix, disabled = false }: ApiKeysFormFie
 					<Input
 						id={`${idPrefix}-name`}
 						{...register("name")}
-						placeholder="Full name"
+						placeholder="Name for the API key"
 						disabled={disabled}
 					/>
 				</Field>

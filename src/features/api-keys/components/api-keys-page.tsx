@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 import { ApiKeysErrorAlert } from "@/features/api-keys/components/api-keys-error-alert";
 import { ApiKeysTable } from "@/features/api-keys/components/api-keys-table";
+import { CreateApiKeysDialog } from "@/features/api-keys/components/create-api-keys-dialog";
 import { ApiKeysListProvider, useApiKeysList } from "@/features/api-keys/hooks/use-api-keys-list";
 import { SetBreadcrumb } from "@/providers/breadcrumb-provider";
 import { route } from "@/routes/routes";
@@ -39,11 +40,14 @@ export default function ApiKeysPageContent() {
 		<>
 			<SetBreadcrumb items={breadcrumbItems} />
 			<div className="flex flex-col gap-6">
-				<div>
-					<h1 className="text-2xl font-semibold tracking-normal">Api Keys</h1>
-					<p className="text-muted-foreground text-sm">
-						Manage your API keys and their permissions.
-					</p>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<h1 className="text-2xl font-semibold tracking-normal">Api Keys</h1>
+						<p className="text-muted-foreground text-sm">
+							Manage your API keys and their permissions.
+						</p>
+					</div>
+					<CreateApiKeysDialog />
 				</div>
 				<Card>
 					<CardHeader>

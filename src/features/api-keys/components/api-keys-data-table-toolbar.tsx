@@ -8,8 +8,6 @@ import { AiFillCloseCircle } from "react-icons/ai";
 
 import { cn } from "@/lib/utils";
 
-import { DataTableMultiSelectFacetedFilter } from "@/components/common/table/data-table-multi-select-faceted-filter";
-import { DataTableSingleSelectFacetedFilter } from "@/components/common/table/data-table-single-select-faceted-filter";
 import { DataTableViewOptions } from "@/components/common/table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -22,22 +20,9 @@ interface ApiKeysDataTableToolbarProps<TData> {
 	table: Table<TData>;
 }
 
-const userRoleFilterOptions = [
-	{ label: "Super Admin", value: "SUPER_ADMIN" },
-	{ label: "Admin", value: "ADMIN" },
-	{ label: "Manager", value: "MANAGER" },
-	{ label: "User", value: "USER" }
-];
-
 export function ApiKeysDataTableToolbar<TData>({ table }: ApiKeysDataTableToolbarProps<TData>) {
-	const {
-		search,
-		isFetching,
-		handleSearchChange,
-		handleOptionFilter,
-		handleResetAll,
-		handleRefresh
-	} = useApiKeysList();
+	const { search, isFetching, handleSearchChange, handleResetAll, handleRefresh } =
+		useApiKeysList();
 	const [searchInput, setSearchInput] = useState(search);
 	const debouncedSearch = useDebouncedValue(searchInput, 400);
 
@@ -82,31 +67,6 @@ export function ApiKeysDataTableToolbar<TData>({ table }: ApiKeysDataTableToolba
 					</InputGroup>
 				</Field>
 				<div className="flex flex-row items-center gap-2">
-					<DataTableMultiSelectFacetedFilter
-						title="Role"
-						queryParameter="role"
-						options={userRoleFilterOptions}
-						onValueChange={() => handleOptionFilter("page", "1")}
-					/>
-					<DataTableSingleSelectFacetedFilter
-						title="Email Verified"
-						queryParameter="emailVerified"
-						options={[
-							{ label: "Verified", value: "true" },
-							{ label: "Unverified", value: "false" }
-						]}
-						onValueChange={() => handleOptionFilter("page", "1")}
-					/>
-					<DataTableSingleSelectFacetedFilter
-						title="Status"
-						queryParameter="isApproved"
-						options={[
-							{ label: "Approved", value: "true" },
-							{ label: "Pending", value: "false" }
-						]}
-						onValueChange={() => handleOptionFilter("page", "1")}
-					/>
-
 					{hasFilters ? (
 						<Button type="button" variant="ghost" size={"sm"} onClick={handleResetFilters}>
 							Reset
