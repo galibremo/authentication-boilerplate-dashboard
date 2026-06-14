@@ -1,5 +1,6 @@
-import ApiKeysPage from "@/features/api-keys/components/api-keys-page";
 import { Metadata } from "next";
+
+import { ApiKeysPage } from "@/features/api-keys/components/api-keys-page";
 
 export const metadata: Metadata = {
 	title: "Api Keys",
@@ -9,3 +10,4 @@ export const metadata: Metadata = {
 export default function ApiKeys() {
 	return <ApiKeysPage />;
 }
+

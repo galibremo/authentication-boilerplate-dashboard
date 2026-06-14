@@ -1,5 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { handleRequestError } from "@/lib/api/handle-request-error";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { ApiKeysErrorAlert } from "@/features/api-keys/components/api-keys-error-alert";
+import { ApiKeysTable } from "@/features/api-keys/components/api-keys-table";
+import { ApiKeysListProvider, useApiKeysList } from "@/features/api-keys/hooks/use-api-keys-list";
 import { SetBreadcrumb } from "@/providers/breadcrumb-provider";
 import { route } from "@/routes/routes";
 
@@ -8,7 +18,23 @@ const breadcrumbItems = [
 	{ name: "Api Keys", isCurrent: true }
 ];
 
-export default function ApiKeysPage() {
+export function ApiKeysPage() {
+	return (
+		<ApiKeysListProvider>
+			<ApiKeysPageContent />
+		</ApiKeysListProvider>
+	);
+}
+
+export default function ApiKeysPageContent() {
+	const router = useRouter();
+	const { error, handleRefresh } = useApiKeysList();
+
+	useEffect(() => {
+		if (!error) return;
+
+		handleRequestError(error, router, "Failed to load API keys");
+	}, [error, router]);
 	return (
 		<>
 			<SetBreadcrumb items={breadcrumbItems} />
@@ -19,7 +45,18 @@ export default function ApiKeysPage() {
 						Manage your API keys and their permissions.
 					</p>
 				</div>
+				<Card>
+					<CardHeader>
+						<CardTitle>API Keys</CardTitle>
+						<CardDescription>Search, filter, and manage API key access.</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col gap-4">
+						{error ? <ApiKeysErrorAlert error={error} onRetry={handleRefresh} /> : null}
+						<ApiKeysTable />
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	);
 }
+

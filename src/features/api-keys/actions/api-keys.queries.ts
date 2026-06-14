@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { ApiKeysListQuery } from "@/features/api-keys/types/api-keys.types";
 import { apiKeysList, getApiKey } from "./api-keys.actions";
-import { apiKeys } from "./users.keys";
+import { apiKeys } from "./api-keys.keys";
+import { ApiKeysListQuery } from "@/features/api-keys/types/api-keys.types";
 
 export function useApiKeysQuery(filters: ApiKeysListQuery) {
 	return useQuery({
@@ -19,3 +19,4 @@ export function useApiKeyQuery(id: string, enabled = true) {
 		refetchOnMount: "always"
 	});
 }
+

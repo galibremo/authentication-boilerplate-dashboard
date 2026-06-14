@@ -4,7 +4,7 @@ export const apiKeysSortDirectionValues = ["asc", "desc"] as const;
 export interface ApiKeys {
 	id: string;
 	name: string;
-	keys: string;
+	key: string;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -39,3 +39,4 @@ export interface DeleteApiKeysInput {
 export interface DeleteApiKeysResponse {
 	deleted: boolean;
 }
+
