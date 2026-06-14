@@ -1,6 +1,6 @@
 export async function POST(req: Request) {
 	const baseUrl = process.env.NEXT_PUBLIC_N8N_API_URL || "http://localhost:5678";
-	const n8nUrl = `${baseUrl}/webhook/${process.env.NEXT_PUBLIC_N8N_WORKSPACE_ID}`;
+	const n8nUrl = `${baseUrl}/webhook/${process.env.NEXT_PUBLIC_N8N_UPLOAD_WEBHOOK_ID}`;
 
 	const formData = await req.formData();
 	const file = formData.get("data") as File;

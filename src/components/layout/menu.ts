@@ -12,6 +12,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import type { NavItemProps, NavUserMaxItemProps } from "@/components/layout/layout.types";
+
 import { route } from "@/routes/routes";
 
 const userItems: NavUserMaxItemProps = [
@@ -51,6 +52,11 @@ const navAiItem: NavItemProps[] = [
 	{
 		title: "Api Keys",
 		url: route.private.apiKeys,
+		icon: Key02Icon
+	},
+	{
+		title: "Chat With AI",
+		url: route.private.chatWithAI,
 		icon: Key02Icon
 	}
 ];
@@ -94,4 +100,5 @@ const navSMTPItem: NavItemProps[] = [
 	}
 ];
 
-export { navLogsItem, navPlatformItem, navSMTPItem, navSystemItem, userItems,navAiItem };
+export { navLogsItem, navPlatformItem, navSMTPItem, navSystemItem, userItems, navAiItem };
+

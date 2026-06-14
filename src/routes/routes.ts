@@ -17,7 +17,8 @@ export const route = {
 
 		// ai-features
 		knowledgeBase: "/knowledge-base",
-		apiKeys: "/api-keys"
+		apiKeys: "/api-keys",
+		chatWithAI: "/chat-with-ai"
 	},
 	protected: {
 		login: "/login",
