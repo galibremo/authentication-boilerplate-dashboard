@@ -15,32 +15,20 @@ interface ApiKeysFormFieldsProps {
 export function ApiKeysFormFields({ idPrefix, disabled = false }: ApiKeysFormFieldsProps) {
 	const {
 		register,
-		control,
 		formState: { errors }
 	} = useFormContext<CreateApiKeysFormValues>();
 
 	return (
 		<FieldGroup className="gap-4">
-			<div className="grid gap-4 sm:grid-cols-2">
-				<Field>
-					<FieldLabel htmlFor={`${idPrefix}-name`}>Name</FieldLabel>
-					<Input
-						id={`${idPrefix}-name`}
-						{...register("name")}
-						placeholder="Name for the API key"
-						disabled={disabled}
-					/>
-				</Field>
-				<Field>
-					<FieldLabel htmlFor={`${idPrefix}-key`}>Key</FieldLabel>
-					<Input
-						id={`${idPrefix}-key`}
-						{...register("key")}
-						placeholder="API key"
-						disabled={disabled}
-					/>
-				</Field>
-			</div>
+			<Field>
+				<FieldLabel htmlFor={`${idPrefix}-name`}>Name</FieldLabel>
+				<Input
+					id={`${idPrefix}-name`}
+					{...register("name")}
+					placeholder="Name for the API key"
+					disabled={disabled}
+				/>
+			</Field>
 		</FieldGroup>
 	);
 }

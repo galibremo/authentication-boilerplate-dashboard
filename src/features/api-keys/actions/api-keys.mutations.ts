@@ -7,7 +7,7 @@ import { apiKeys } from "@/features/api-keys/actions/api-keys.keys";
 export function useCreateApiKeysMutation() {
 	const queryClient = useQueryClient();
 
-	const { mutateAsync, mutate, error, isSuccess, isError, isPending } = useMutation({
+	const { mutateAsync, error, isSuccess, isError, isPending } = useMutation({
 		mutationFn: createApiKeys,
 		onSettled: (_, error) => {
 			if (error) {
@@ -20,8 +20,7 @@ export function useCreateApiKeysMutation() {
 		}
 	});
 	return {
-		createApiKeys: mutate,
-		createApiKeysAsynchronously: mutateAsync,
+		createApiKeys: mutateAsync,
 		isCreateApiKeysLoading: isPending,
 		createApiKeysError: error,
 		isCreateApiKeysError: isError,

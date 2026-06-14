@@ -34,12 +34,14 @@ export function useApiKeysActions(apiKeys: ApiKeys) {
 				name: values.name,
 				key: values.key
 			});
+			setEditDialogOpen(false);
 		},
 		[updateApiKeys, apiKeys.id]
 	);
 
 	const handleDeleteApiKeys = useCallback(() => {
 		deleteApiKeys({ id: apiKeys.id });
+		setDeleteDialogOpen(false);
 	}, [deleteApiKeys, apiKeys.id]);
 
 	const resetEditForm = useCallback(() => {

@@ -4,7 +4,6 @@ import { validateString } from "@/validators/common-rule";
 
 const baseApiKeysFormSchema = z.object({
 	name: validateString("Name", { max: 255 }),
-	key: validateString("Key")
 });
 
 export const createApiKeysFormSchema = baseApiKeysFormSchema;

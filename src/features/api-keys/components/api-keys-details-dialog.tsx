@@ -1,5 +1,9 @@
 "use client";
 
+import { Copy01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -28,6 +32,11 @@ export function ApiKeysDetailsDialog({ apiKey, open, onOpenChange }: ApiKeysDeta
 	const displayName = detailKey.name;
 	const showSkeleton = userQuery.isLoading && !userQuery.data;
 
+	const handleCopyKey = async (key: string) => {
+		await navigator.clipboard.writeText(key);
+		toast.success("API key copied to clipboard");
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-2xl">
@@ -44,7 +53,18 @@ export function ApiKeysDetailsDialog({ apiKey, open, onOpenChange }: ApiKeysDeta
 							<section className="flex min-w-0 items-start gap-4">
 								<div className="min-w-0 flex-1">
 									<div className="truncate text-base font-medium">{displayName}</div>
-									<div className="text-muted-foreground truncate text-sm">{detailKey.key}</div>
+									<div className="text-muted-foreground flex items-center gap-2 truncate text-sm">
+										{detailKey.key}
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											className="h-6 w-6"
+											onClick={() => handleCopyKey(detailKey.key)}
+										>
+											<HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
+										</Button>
+									</div>
 								</div>
 							</section>
 						</>

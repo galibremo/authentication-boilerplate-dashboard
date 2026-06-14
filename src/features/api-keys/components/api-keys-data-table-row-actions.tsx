@@ -55,7 +55,7 @@ export function ApiKeysDataTableRowActions({ apiKey }: ApiKeysDataTableRowAction
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
-						disabled={!actions.isUpdateApiKeysLoading}
+						disabled={actions.isUpdateApiKeysLoading}
 						onSelect={event => {
 							event.preventDefault();
 							actions.resetEditForm();
@@ -68,7 +68,7 @@ export function ApiKeysDataTableRowActions({ apiKey }: ApiKeysDataTableRowAction
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						variant="destructive"
-						disabled={!actions.isDeleteApiKeysLoading}
+						disabled={actions.isDeleteApiKeysLoading}
 						onSelect={event => {
 							event.preventDefault();
 							actions.setDeleteDialogOpen(true);

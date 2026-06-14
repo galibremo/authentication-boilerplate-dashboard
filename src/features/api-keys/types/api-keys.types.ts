@@ -23,7 +23,6 @@ export interface ApiKeysListQuery {
 
 export interface CreateApiKeys {
 	name: string;
-	key: string;
 }
 
 export interface UpdateApiKeys {

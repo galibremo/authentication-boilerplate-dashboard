@@ -36,8 +36,7 @@ export function CreateApiKeysDialog() {
 	const handleOpenChange = (nextOpen: boolean) => {
 		if (nextOpen) {
 			form.reset({
-				name: "",
-				key: ""
+				name: ""
 			});
 		}
 
@@ -47,9 +46,9 @@ export function CreateApiKeysDialog() {
 	const onSubmit = useCallback(
 		(values: CreateApiKeysFormValues) => {
 			createApiKeys({
-				name: values.name,
-				key: values.key
+				name: values.name
 			});
+			setOpen(false);
 		},
 		[createApiKeys]
 	);
@@ -91,8 +90,7 @@ export function CreateApiKeysDialog() {
 
 function createInitialValues(): CreateApiKeysFormValues {
 	return {
-		name: "",
-		key: ""
+		name: ""
 	};
 }
 
