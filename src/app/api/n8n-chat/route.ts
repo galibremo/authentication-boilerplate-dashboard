@@ -1,5 +1,5 @@
 export async function POST(req: Request) {
-	const { chatInput } = await req.json();
+	const { chatInput, sessionId } = await req.json();
 	const baseUrl = process.env.N8N_CHAT_WEBHOOK || "http://localhost:5678";
 	const n8nUrl = `${baseUrl}/webhook/${process.env.NEXT_PUBLIC_N8N_CHAT_WEBHOOK_ID}`;
 
@@ -9,7 +9,8 @@ export async function POST(req: Request) {
 			"Content-Type": "application/json"
 		},
 		body: JSON.stringify({
-			chatInput
+			chatInput,
+			sessionId: sessionId || crypto.randomUUID()
 		})
 	});
 
