@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 
+import { useKnowledgeBaseUploadMutation } from "@/features/knowledge-base/actions/knowledge-base.mutations";
+
 type Status = "idle" | "uploading" | "clearing" | "success" | "error";
 
 export function useKnowledgeBaseUploader() {
@@ -8,6 +10,8 @@ export function useKnowledgeBaseUploader() {
 	const [message, setMessage] = useState("");
 	const [showClearDialog, setShowClearDialog] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { uploadMutate, isUploadPending } = useKnowledgeBaseUploadMutation();
 
 	const addFiles = (incoming: File[]) => {
 		setFiles(prev => {

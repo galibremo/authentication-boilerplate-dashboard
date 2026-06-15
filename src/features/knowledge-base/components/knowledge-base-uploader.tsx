@@ -1,19 +1,6 @@
 "use client";
 
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { useKnowledgeBaseUploader } from "../hooks/use-knowledge-base-uploader";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -28,7 +15,22 @@ import {
 } from "lucide-react";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { useKnowledgeBaseUploader } from "../hooks/use-knowledge-base-uploader";
+
+import { cn } from "@/lib/utils";
+
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const ACCEPTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".csv", ".json", ".md"];
 
@@ -80,7 +82,7 @@ export default function KnowledgeBaseUploader() {
 	const isSuccess = status === "success";
 
 	return (
-		<div className="mx-auto w-full max-w-lg space-y-6">
+		<div className="w-full max-w-lg space-y-6">
 			{/* Drop zone */}
 			<div
 				{...getRootProps()}
@@ -228,3 +230,4 @@ export default function KnowledgeBaseUploader() {
 		</div>
 	);
 }
+

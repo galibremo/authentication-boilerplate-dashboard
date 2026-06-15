@@ -1,5 +1,6 @@
 "use client";
 
+import KnowledgeBaseForm from "@/features/knowledge-base/components/knowledge-base-form";
 import KnowledgeBaseUploader from "@/features/knowledge-base/components/knowledge-base-uploader";
 import { SetBreadcrumb } from "@/providers/breadcrumb-provider";
 import { route } from "@/routes/routes";
@@ -20,8 +21,12 @@ export default function KnowledgeBasePage() {
 						Access our knowledge base for help and support.
 					</p>
 				</div>
-				<KnowledgeBaseUploader />
+				<div className="flex w-full gap-4">
+					<KnowledgeBaseForm />
+					<KnowledgeBaseUploader />
+				</div>
 			</div>
 		</>
 	);
 }
+

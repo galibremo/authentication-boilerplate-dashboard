@@ -67,6 +67,8 @@ export const apiRoute = {
 	emailLog: (logId: string) => `/email-logs/${logId}`,
 	emailLogResend: (logId: string) => `/email-logs/${logId}/resend`,
 	// ai features
+	knowledgeBaseMessages: "/knowledge-base",
+	knowledgeBaseUpload: "/api/proxy/n8n/upload",
 	knowledgeBase: (id: string) => `/webhook/${id}`,
 	apiKeys: "/api-keys",
 	apiKey: (id: string) => `/api-keys/${id}`,
