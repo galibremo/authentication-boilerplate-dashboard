@@ -35,3 +35,9 @@ export async function uploadKnowledgeBaseFile(file: File): Promise<ApiResponse<v
 	});
 }
 
+export async function uploadKnowledgeBaseFiles(files: File[]): Promise<number> {
+	for (const file of files) {
+		await uploadKnowledgeBaseFile(file);
+	}
+	return files.length;
+}

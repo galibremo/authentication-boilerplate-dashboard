@@ -3,7 +3,8 @@ import { toast } from "sonner";
 
 import {
 	updateKnowledgeBaseMessage,
-	uploadKnowledgeBaseFile
+	uploadKnowledgeBaseFile,
+	uploadKnowledgeBaseFiles
 } from "@/features/knowledge-base/actions/knowledge-base.actions";
 import { knowledgeBaseKeys } from "@/features/knowledge-base/actions/knowledge-base.keys";
 
@@ -34,7 +35,7 @@ export function useKnowledgeBaseUploadMutation() {
 	const queryClient = useQueryClient();
 
 	const { mutate, mutateAsync, isPending, isError, error } = useMutation({
-		mutationFn: uploadKnowledgeBaseFile,
+		mutationFn: uploadKnowledgeBaseFiles,
 		onSettled: (_, error) => {
 			if (error) {
 				toast.error((error as Error).message || "Failed to upload files to knowledge base");

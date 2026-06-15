@@ -31,22 +31,7 @@ export function useKnowledgeBaseUploader() {
 
 		try {
 			// Upload files one by one so n8n processes each separately
-			for (const file of files) {
-				const formData = new FormData();
-				formData.append("data", file); // "data" matches Webhook1 binary property
-
-				const res = await fetch("/api/proxy/n8n/upload", {
-					method: "POST",
-					body: formData
-				});
-
-				if (!res.ok) {
-					const errData = await res.json().catch(() => ({}));
-					setStatus("error");
-					setMessage(errData?.message || `Upload failed for ${file.name}`);
-					return; // Stop on first failure
-				}
-			}
+			await uploadMutate(files);
 
 			setStatus("success");
 			setMessage(`Successfully upserted ${files.length} file(s) into ChromaDB.`);
