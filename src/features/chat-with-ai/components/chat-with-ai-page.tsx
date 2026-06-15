@@ -1,6 +1,6 @@
 "use client";
 
-import ChatBot from "@/features/chat-wit-ai/components/chat-bot";
+import ChatBot from "@/features/chat-with-ai/components/chat-bot";
 import { SetBreadcrumb } from "@/providers/breadcrumb-provider";
 import { route } from "@/routes/routes";
 

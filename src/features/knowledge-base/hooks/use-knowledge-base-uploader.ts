@@ -31,7 +31,7 @@ export function useKnowledgeBaseUploader() {
 				const formData = new FormData();
 				formData.append("data", file); // "data" matches Webhook1 binary property
 
-				const res = await fetch("/api/n8n-upload", {
+				const res = await fetch("/api/proxy/n8n/upload", {
 					method: "POST",
 					body: formData
 				});
@@ -58,7 +58,7 @@ export function useKnowledgeBaseUploader() {
 		setMessage("");
 
 		try {
-			const res = await fetch("/api/n8n-clear", { method: "DELETE" });
+			const res = await fetch("/api/proxy/n8n/clear", { method: "DELETE" });
 			const data = await res.json().catch(() => ({}));
 
 			if (res.ok) {

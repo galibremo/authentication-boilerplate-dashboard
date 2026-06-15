@@ -69,7 +69,9 @@ export const apiRoute = {
 	// ai features
 	knowledgeBase: (id: string) => `/webhook/${id}`,
 	apiKeys: "/api-keys",
-	apiKey: (id: string) => `/api-keys/${id}`
+	apiKey: (id: string) => `/api-keys/${id}`,
+	chat: "/n8n/chat",
+	chatHistory: "/n8n/fetch-chat"
 } as const;
 
 const DEFAULT_LOGIN_REDIRECT = route.private.dashboard;

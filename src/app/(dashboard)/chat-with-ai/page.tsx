@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import ChatWithAIPage from "@/features/chat-wit-ai/components/chat-with-ai-page";
+import ChatWithAIPage from "@/features/chat-with-ai/components/chat-with-ai-page";
 
 export const metadata: Metadata = {
 	title: "Chat With AI",
