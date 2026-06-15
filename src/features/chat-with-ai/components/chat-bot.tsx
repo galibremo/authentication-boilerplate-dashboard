@@ -3,8 +3,9 @@
 import { useSendMessageMutation } from "../actions/chat.mutations";
 import { useChatHistoryQuery } from "../actions/chat.queries";
 import { Bot, Loader2, Send, Sparkles, User } from "lucide-react";
-import Markdown from "react-markdown";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { cn } from "@/lib/utils";
 
@@ -104,12 +105,13 @@ export default function ChatBot() {
 										) : (
 											<div className="prose prose-sm dark:prose-invert max-w-none">
 												<Markdown
+													remarkPlugins={[remarkGfm]}
 													components={{
 														a: ({ children, ...props }) => (
 															<a {...props} target="_blank" rel="noopener noreferrer">
 																{children}
 															</a>
-														),
+														)
 													}}
 												>
 													{msg.message.content}
