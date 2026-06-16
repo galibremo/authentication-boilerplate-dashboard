@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
+	deleteKnowledgeBaseFile,
 	updateKnowledgeBaseMessage,
 	uploadKnowledgeBaseFile
 } from "@/features/knowledge-base/actions/knowledge-base.actions";
@@ -39,7 +40,7 @@ export function useKnowledgeBaseUploadMutation() {
 			if (error) {
 				toast.error((error as Error).message || "Failed to upload files to knowledge base");
 			} else {
-				queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.all });
+				queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.files() });
 				toast.success("File stored and sent for indexing");
 			}
 		}
@@ -51,5 +52,32 @@ export function useKnowledgeBaseUploadMutation() {
 		isUploadPending: isPending,
 		isUploadError: isError,
 		uploadError: error
+	};
+}
+
+export function useDeleteKnowledgeBaseFileMutation() {
+	const queryClient = useQueryClient();
+
+	const { mutate, mutateAsync, isPending, isError, error } = useMutation({
+		mutationFn: deleteKnowledgeBaseFile,
+		onSettled: (_, error) => {
+			if (error) {
+				toast.error(
+					(error as Error).message ||
+						"Could not delete this file. Vector cleanup did not complete."
+				);
+			} else {
+				queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.files() });
+				toast.success("File and vectors deleted");
+			}
+		}
+	});
+
+	return {
+		deleteFile: mutate,
+		deleteFileAsync: mutateAsync,
+		isDeleteFilePending: isPending,
+		isDeleteFileError: isError,
+		deleteFileError: error
 	};
 }

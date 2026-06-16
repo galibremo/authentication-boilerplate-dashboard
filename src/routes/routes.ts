@@ -69,6 +69,8 @@ export const apiRoute = {
 	// ai features
 	knowledgeBaseMessages: "/knowledge-base",
 	knowledgeBaseUpload: "/n8n/upload",
+	knowledgeBaseFiles: "/knowledge-base/files",
+	knowledgeBaseFile: (id: string) => `/knowledge-base/files/${id}`,
 	knowledgeBase: (id: string) => `/webhook/${id}`,
 	apiKeys: "/api-keys",
 	apiKey: (id: string) => `/api-keys/${id}`,
@@ -82,4 +84,3 @@ const appRoutePrefix = process.env.NEXT_PUBLIC_FRONTEND_URL;
 const apiRoutePrefix = process.env.NEXT_PUBLIC_API_URL;
 
 export { apiRoutePrefix, appRoutePrefix, DEFAULT_LOGIN_REDIRECT };
-

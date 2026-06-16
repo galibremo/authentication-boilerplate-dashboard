@@ -1,10 +1,15 @@
 import { apiClient } from "@/lib/api/client";
 
 import {
+	DeleteKnowledgeBaseFileInput,
+	DeleteKnowledgeBaseFileResponse,
+	KnowledgeBaseFileListQuery,
+	KnowledgeBaseFileListResponse,
 	KnowledgeBaseUploadResponse,
 	KnowledgeBaseResponse,
 	UpdateKnowledgeBaseMessagePayload
 } from "@/features/knowledge-base/types/knowledge-base.types";
+import { createKnowledgeBaseFileListQuery } from "@/features/knowledge-base/schemas/knowledge-base-files.schema";
 import { apiRoute } from "@/routes/routes";
 
 export async function getKnowledgeBaseMessage(): Promise<KnowledgeBaseResponse> {
@@ -22,6 +27,27 @@ export async function updateKnowledgeBaseMessage(
 		url: apiRoute.knowledgeBaseMessages,
 		data: body
 	});
+}
+
+export async function listKnowledgeBaseFiles(
+	filters: KnowledgeBaseFileListQuery
+): Promise<KnowledgeBaseFileListResponse> {
+	return apiClient<KnowledgeBaseFileListResponse>({
+		method: "GET",
+		url: apiRoute.knowledgeBaseFiles,
+		params: createKnowledgeBaseFileListQuery(filters)
+	});
+}
+
+export async function deleteKnowledgeBaseFile({
+	id
+}: DeleteKnowledgeBaseFileInput): Promise<DeleteKnowledgeBaseFileResponse> {
+	const deleted = await apiClient<boolean>({
+		method: "DELETE",
+		url: apiRoute.knowledgeBaseFile(id)
+	});
+
+	return { deleted };
 }
 
 export async function uploadKnowledgeBaseFile(file: File): Promise<KnowledgeBaseUploadResponse> {
