@@ -9,3 +9,4 @@ export type UpdateKnowledgeBaseMessagePayload = {
 	systemMessage: string;
 };
 
+export type KnowledgeBaseUploadResponse = Record<string, unknown>;

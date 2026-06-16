@@ -21,7 +21,7 @@ export default function KnowledgeBasePage() {
 						Access our knowledge base for help and support.
 					</p>
 				</div>
-				<div className="flex w-full gap-4">
+				<div className="flex w-full flex-col gap-4 xl:flex-row">
 					<KnowledgeBaseForm />
 					<KnowledgeBaseUploader />
 				</div>
@@ -29,4 +29,3 @@ export default function KnowledgeBasePage() {
 		</>
 	);
 }
-

@@ -3,8 +3,7 @@ import { toast } from "sonner";
 
 import {
 	updateKnowledgeBaseMessage,
-	uploadKnowledgeBaseFile,
-	uploadKnowledgeBaseFiles
+	uploadKnowledgeBaseFile
 } from "@/features/knowledge-base/actions/knowledge-base.actions";
 import { knowledgeBaseKeys } from "@/features/knowledge-base/actions/knowledge-base.keys";
 
@@ -35,13 +34,13 @@ export function useKnowledgeBaseUploadMutation() {
 	const queryClient = useQueryClient();
 
 	const { mutate, mutateAsync, isPending, isError, error } = useMutation({
-		mutationFn: uploadKnowledgeBaseFiles,
+		mutationFn: uploadKnowledgeBaseFile,
 		onSettled: (_, error) => {
 			if (error) {
 				toast.error((error as Error).message || "Failed to upload files to knowledge base");
 			} else {
 				queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.all });
-				toast.success("Files successfully upserted into ChromaDB");
+				toast.success("File stored and sent for indexing");
 			}
 		}
 	});
@@ -54,4 +53,3 @@ export function useKnowledgeBaseUploadMutation() {
 		uploadError: error
 	};
 }
-

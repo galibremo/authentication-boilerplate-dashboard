@@ -1,6 +1,5 @@
 "use client";
 
-import { useKnowledgeBaseUploader } from "../hooks/use-knowledge-base-uploader";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -9,37 +8,35 @@ import {
 	FileJson,
 	FileSpreadsheet,
 	FileText,
+	FileType,
 	Loader2,
-	Trash2,
 	X
 } from "lucide-react";
 import { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
+import { type FileRejection, useDropzone } from "react-dropzone";
 
-import { cn } from "@/lib/utils";
-
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
-const ACCEPTED_EXTENSIONS = [".txt", ".pdf", ".docx", ".csv", ".json", ".md"];
+import {
+	KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS,
+	KNOWLEDGE_BASE_DROPZONE_ACCEPT,
+	KNOWLEDGE_BASE_UPLOAD_MAX_SIZE,
+	KnowledgeBaseUploadItem,
+	useKnowledgeBaseUploader
+} from "../hooks/use-knowledge-base-uploader";
 
 function getFileIcon(name: string) {
 	const ext = name.split(".").pop()?.toLowerCase();
 	const cls = "h-4 w-4 shrink-0 text-muted-foreground";
-	if (ext === "json") return <FileJson className={cls} />;
-	if (ext === "csv") return <FileSpreadsheet className={cls} />;
-	if (ext === "txt" || ext === "md") return <FileText className={cls} />;
+	if (ext === "json" || ext === "jsonl" || ext === "ndjson") return <FileJson className={cls} />;
+	if (ext === "csv" || ext === "tsv") return <FileSpreadsheet className={cls} />;
+	if (ext === "pdf" || ext === "doc" || ext === "docx") return <FileType className={cls} />;
+	if (ext === "txt" || ext === "md" || ext === "markdown" || ext === "xml") {
+		return <FileText className={cls} />;
+	}
 	return <File className={cls} />;
 }
 
@@ -49,45 +46,68 @@ function formatSize(bytes: number) {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getStatusIcon(item: KnowledgeBaseUploadItem) {
+	if (item.status === "uploading") {
+		return <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />;
+	}
+
+	if (item.status === "success") {
+		return <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />;
+	}
+
+	if (item.status === "error") {
+		return <AlertCircle className="text-destructive h-4 w-4 shrink-0" />;
+	}
+
+	return getFileIcon(item.file.name);
+}
+
+function getStatusText(item: KnowledgeBaseUploadItem) {
+	if (item.status === "uploading") return "Uploading";
+	if (item.status === "success") return "Stored and sent for indexing";
+	if (item.status === "error") return item.error || "Upload failed";
+	return "Ready";
+}
+
 export default function KnowledgeBaseUploader() {
 	const {
 		files,
-		status,
 		message,
-		showClearDialog,
+		summary,
 		addFiles,
+		addRejectedFiles,
 		removeFile,
+		clearCompleted,
 		handleUpload,
-		handleClearConfirm,
-		setShowClearDialog,
-		busy
+		busy,
+		uploadableCount
 	} = useKnowledgeBaseUploader();
 
-	const onDrop = useCallback((accepted: File[]) => addFiles(accepted), [addFiles]);
+	const onDrop = useCallback(
+		(accepted: File[], rejected: FileRejection[]) => {
+			addFiles(accepted);
+			addRejectedFiles(rejected);
+		},
+		[addFiles, addRejectedFiles]
+	);
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
-		accept: Object.fromEntries(
-			ACCEPTED_EXTENSIONS.map(ext => [
-				ext === ".md" ? "text/markdown" : `application/${ext.slice(1)}`,
-				[ext]
-			])
-		),
+		accept: KNOWLEDGE_BASE_DROPZONE_ACCEPT,
+		maxSize: KNOWLEDGE_BASE_UPLOAD_MAX_SIZE,
 		multiple: true,
 		disabled: busy
 	});
 
-	const isUploading = status === "uploading";
-	const isClearing = status === "clearing";
-	const isSuccess = status === "success";
+	const isUploading = files.some(file => file.status === "uploading");
+	const hasCompleted = files.some(file => file.status === "success");
 
 	return (
-		<div className="w-full max-w-lg space-y-6">
-			{/* Drop zone */}
+		<div className="w-full max-w-lg space-y-5">
 			<div
 				{...getRootProps()}
 				className={cn(
-					"bg-accent/50 flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed py-20 text-center transition-colors",
+					"bg-accent/50 flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-16 text-center transition-colors",
 					isDragActive ? "border-border bg-accent" : "border-border/90 hover:border-border",
 					busy && "pointer-events-none opacity-50"
 				)}
@@ -98,10 +118,12 @@ export default function KnowledgeBaseUploader() {
 					<p className="text-foreground text-sm font-medium">
 						{isDragActive ? "Release to add files" : "Drop files here or click to browse"}
 					</p>
-					<p className="text-muted-foreground mt-1 text-xs">Supports multiple files at once</p>
+					<p className="text-muted-foreground mt-1 text-xs">
+						Documents up to 10MB each
+					</p>
 				</div>
 				<div className="flex flex-wrap justify-center gap-1.5">
-					{ACCEPTED_EXTENSIONS.map(ext => (
+					{KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS.map(ext => (
 						<Badge
 							key={ext}
 							variant="secondary"
@@ -113,26 +135,41 @@ export default function KnowledgeBaseUploader() {
 				</div>
 			</div>
 
-			{/* File list */}
 			{files.length > 0 && (
 				<ul className="space-y-1.5">
-					{files.map(f => (
+					{files.map(item => (
 						<li
-							key={f.name}
-							className="border-border/40 bg-muted/40 flex items-center gap-3 rounded-lg border px-3 py-2"
+							key={item.id}
+							className={cn(
+								"border-border/40 bg-muted/40 flex items-center gap-3 rounded-lg border px-3 py-2",
+								item.status === "error" && "border-destructive/30 bg-destructive/5",
+								item.status === "success" &&
+									"border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
+							)}
 						>
-							{getFileIcon(f.name)}
-							<span className="text-foreground flex-1 truncate text-sm" title={f.name}>
-								{f.name}
-							</span>
+							{getStatusIcon(item)}
+							<div className="min-w-0 flex-1">
+								<span className="text-foreground block truncate text-sm" title={item.file.name}>
+									{item.file.name}
+								</span>
+								<span
+									className={cn(
+										"text-muted-foreground block truncate text-xs",
+										item.status === "error" && "text-destructive",
+										item.status === "success" && "text-green-700 dark:text-green-400"
+									)}
+								>
+									{getStatusText(item)}
+								</span>
+							</div>
 							<span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-								{formatSize(f.size)}
+								{formatSize(item.file.size)}
 							</span>
 							<button
-								onClick={() => removeFile(f.name)}
+								onClick={() => removeFile(item.id)}
 								disabled={busy}
-								aria-label={`Remove ${f.name}`}
-								className="text-muted-foreground hover:text-destructive shrink-0 rounded p-0.5 transition-colors disabled:pointer-events-none"
+								aria-label={`Remove ${item.file.name}`}
+								className="text-muted-foreground hover:text-destructive shrink-0 rounded p-0.5 transition-colors disabled:pointer-events-none disabled:opacity-50"
 							>
 								<X className="h-3.5 w-3.5" />
 							</button>
@@ -141,93 +178,52 @@ export default function KnowledgeBaseUploader() {
 				</ul>
 			)}
 
-			{/* Status message */}
 			{message && (
-				<div
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm",
-						isSuccess
-							? "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400"
-							: "border-destructive/30 bg-destructive/5 text-destructive"
-					)}
-				>
-					{isSuccess ? (
-						<CheckCircle2 className="h-4 w-4 shrink-0" />
-					) : (
-						<AlertCircle className="h-4 w-4 shrink-0" />
-					)}
+				<div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm">
+					<AlertCircle className="h-4 w-4 shrink-0" />
 					<span>{message}</span>
 				</div>
 			)}
 
-			{/* Progress bar (visible only while uploading) */}
+			{summary && (
+				<div className="flex items-center gap-2.5 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400">
+					<CheckCircle2 className="h-4 w-4 shrink-0" />
+					<span>{summary}</span>
+				</div>
+			)}
+
 			{isUploading && <Progress value={undefined} className="h-0.75" />}
 
-			{/* Upload button */}
-			<Button onClick={handleUpload} disabled={!files.length || busy} className="w-full gap-2">
-				{isUploading ? (
-					<>
-						<Loader2 className="h-4 w-4 animate-spin" />
-						Uploading…
-					</>
-				) : (
-					<>
-						<CloudUpload className="h-4 w-4" />
-						Upload to ChromaDB
-					</>
+			<div className="flex flex-col gap-2 sm:flex-row">
+				<Button
+					onClick={handleUpload}
+					disabled={!uploadableCount || busy}
+					className="flex-1 gap-2"
+				>
+					{isUploading ? (
+						<>
+							<Loader2 className="h-4 w-4 animate-spin" />
+							Uploading...
+						</>
+					) : (
+						<>
+							<CloudUpload className="h-4 w-4" />
+							Upload to knowledge base
+						</>
+					)}
+				</Button>
+				{hasCompleted && (
+					<Button
+						type="button"
+						variant="outline"
+						onClick={clearCompleted}
+						disabled={busy}
+						className="sm:w-auto"
+					>
+						Clear completed
+					</Button>
 				)}
-			</Button>
-
-			{/* Divider */}
-			<div className="flex items-center gap-3">
-				<div className="bg-border/50 h-px flex-1" />
-				<span className="text-muted-foreground text-[11px]">collection</span>
-				<div className="bg-border/50 h-px flex-1" />
 			</div>
-
-			{/* Clear button */}
-			<Button
-				variant="outline"
-				onClick={() => setShowClearDialog(true)}
-				disabled={busy}
-				className="border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive w-full gap-2"
-			>
-				{isClearing ? (
-					<>
-						<Loader2 className="h-4 w-4 animate-spin" />
-						Clearing…
-					</>
-				) : (
-					<>
-						<Trash2 className="h-4 w-4" />
-						Clear ChromaDB collection
-					</>
-				)}
-			</Button>
-
-			{/* Clear confirmation dialog */}
-			<AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Clear ChromaDB collection?</AlertDialogTitle>
-						<AlertDialogDescription>
-							This will permanently delete all chunks from{" "}
-							<span className="text-foreground font-medium">office_dataset</span>. This action
-							cannot be undone.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleClearConfirm}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-						>
-							Yes, clear it
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }
-

@@ -1,88 +1,226 @@
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { type FileRejection } from "react-dropzone";
 
 import { useKnowledgeBaseUploadMutation } from "@/features/knowledge-base/actions/knowledge-base.mutations";
+import { KnowledgeBaseUploadResponse } from "@/features/knowledge-base/types/knowledge-base.types";
 
-type Status = "idle" | "uploading" | "clearing" | "success" | "error";
+export const KNOWLEDGE_BASE_UPLOAD_MAX_SIZE = 10 * 1024 * 1024;
+
+export const KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS = [
+	".txt",
+	".md",
+	".markdown",
+	".csv",
+	".json",
+	".jsonl",
+	".ndjson",
+	".xml",
+	".tsv",
+	".pdf",
+	".doc",
+	".docx"
+] as const;
+
+export const KNOWLEDGE_BASE_DROPZONE_ACCEPT = {
+	"text/plain": [".txt"],
+	"text/markdown": [".md", ".markdown"],
+	"text/csv": [".csv"],
+	"text/xml": [".xml"],
+	"text/tab-separated-values": [".tsv"],
+	"application/json": [".json"],
+	"application/ld+json": [".json"],
+	"application/x-ndjson": [".jsonl", ".ndjson"],
+	"application/xml": [".xml"],
+	"application/pdf": [".pdf"],
+	"application/msword": [".doc"],
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
+};
+
+const acceptedExtensionSet = new Set(KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS);
+
+type UploadStatus = "pending" | "uploading" | "success" | "error";
+
+export type KnowledgeBaseUploadItem = {
+	id: string;
+	file: File;
+	status: UploadStatus;
+	error?: string;
+	response?: KnowledgeBaseUploadResponse;
+};
+
+function getFileId(file: File) {
+	return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function getFileExtension(file: File) {
+	const extension = file.name.split(".").pop()?.toLowerCase();
+	return extension ? `.${extension}` : "";
+}
+
+function validateFile(file: File) {
+	if (file.size > KNOWLEDGE_BASE_UPLOAD_MAX_SIZE) {
+		return "File is larger than 10MB.";
+	}
+
+	if (
+		!acceptedExtensionSet.has(
+			getFileExtension(file) as (typeof KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS)[number]
+		)
+	) {
+		return "File type is not supported.";
+	}
+
+	return null;
+}
+
+function getRejectionMessage(rejection: FileRejection) {
+	const firstError = rejection.errors[0];
+
+	if (firstError?.code === "file-too-large") {
+		return `${rejection.file.name} is larger than 10MB.`;
+	}
+
+	if (firstError?.code === "file-invalid-type") {
+		return `${rejection.file.name} is not a supported document.`;
+	}
+
+	return `${rejection.file.name} could not be added.`;
+}
+
+function getErrorMessage(error: unknown) {
+	if (error instanceof Error) return error.message;
+	return "Upload failed.";
+}
 
 export function useKnowledgeBaseUploader() {
-	const [files, setFiles] = useState<File[]>([]);
-	const [status, setStatus] = useState<Status>("idle");
+	const [items, setItems] = useState<KnowledgeBaseUploadItem[]>([]);
 	const [message, setMessage] = useState("");
-	const [showClearDialog, setShowClearDialog] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
+	const [isUploadingQueue, setIsUploadingQueue] = useState(false);
 
-	const { uploadMutate, isUploadPending } = useKnowledgeBaseUploadMutation();
+	const { uploadMutateAsync, isUploadPending } = useKnowledgeBaseUploadMutation();
+	const busy = isUploadingQueue || isUploadPending;
 
 	const addFiles = (incoming: File[]) => {
-		setFiles(prev => {
-			const names = new Set(prev.map(f => f.name));
-			return [...prev, ...incoming.filter(f => !names.has(f.name))];
+		if (!incoming.length) return;
+
+		setItems(prev => {
+			const ids = new Set(prev.map(item => item.id));
+			const next = [...prev];
+			const messages: string[] = [];
+
+			for (const file of incoming) {
+				const id = getFileId(file);
+				const validationError = validateFile(file);
+
+				if (ids.has(id)) {
+					messages.push(`${file.name} is already in the queue.`);
+					continue;
+				}
+
+				if (validationError) {
+					messages.push(`${file.name}: ${validationError}`);
+					continue;
+				}
+
+				ids.add(id);
+				next.push({ id, file, status: "pending" });
+			}
+
+			setMessage(messages.join(" "));
+			return next;
 		});
 	};
 
-	const removeFile = (name: string) => {
-		setFiles(prev => prev.filter(f => f.name !== name));
+	const addRejectedFiles = (rejections: FileRejection[]) => {
+		if (!rejections.length) return;
+		setMessage(rejections.map(getRejectionMessage).join(" "));
+	};
+
+	const removeFile = (id: string) => {
+		if (busy) return;
+		setItems(prev => prev.filter(item => item.id !== id));
+	};
+
+	const clearCompleted = () => {
+		if (busy) return;
+		setItems(prev => prev.filter(item => item.status !== "success"));
+		setMessage("");
 	};
 
 	const handleUpload = async () => {
-		if (!files.length) return;
-		setStatus("uploading");
-		setMessage("");
+		if (busy) return;
 
-		try {
-			// Upload files one by one so n8n processes each separately
-			await uploadMutate(files);
+		const uploadableItems = items.filter(
+			item => item.status === "pending" || item.status === "error"
+		);
 
-			setStatus("success");
-			setMessage(`Successfully upserted ${files.length} file(s) into ChromaDB.`);
-			setFiles([]);
-		} catch (err: any) {
-			setStatus("error");
-			setMessage(`Could not reach N8N: ${err.message}`);
+		if (!uploadableItems.length) {
+			setMessage("Add at least one supported document before uploading.");
+			return;
 		}
-	};
 
-	const handleClear = async () => {
-		setStatus("clearing");
 		setMessage("");
+		setIsUploadingQueue(true);
 
 		try {
-			const res = await fetch("/api/proxy/n8n/clear", { method: "DELETE" });
-			const data = await res.json().catch(() => ({}));
+			for (const item of uploadableItems) {
+				setItems(prev =>
+					prev.map(current =>
+						current.id === item.id
+							? { ...current, status: "uploading", error: undefined }
+							: current
+					)
+				);
 
-			if (res.ok) {
-				setStatus("success");
-				setMessage("ChromaDB collection cleared successfully.");
-			} else {
-				setStatus("error");
-				setMessage(data?.message || `Clear failed with status ${res.status}`);
+				try {
+					const response = await uploadMutateAsync(item.file);
+					setItems(prev =>
+						prev.map(current =>
+							current.id === item.id
+								? { ...current, status: "success", response }
+								: current
+						)
+					);
+				} catch (error) {
+					setItems(prev =>
+						prev.map(current =>
+							current.id === item.id
+								? { ...current, status: "error", error: getErrorMessage(error) }
+								: current
+						)
+					);
+				}
 			}
-		} catch (err: any) {
-			setStatus("error");
-			setMessage(`Could not reach ChromaDB: ${err.message}`);
+		} finally {
+			setIsUploadingQueue(false);
 		}
 	};
 
-	const handleClearConfirm = async () => {
-		setShowClearDialog(false);
-		await handleClear();
-	};
+	const summary = useMemo(() => {
+		const total = items.length;
+		const success = items.filter(item => item.status === "success").length;
+		const failed = items.filter(item => item.status === "error").length;
 
-	const busy = status === "uploading" || status === "clearing";
+		if (!total) return "";
+		if (failed) return `${success}/${total} file(s) stored and sent for indexing.`;
+		if (success === total) return `${total} file(s) stored and sent for indexing.`;
+		return "";
+	}, [items]);
+
+	const uploadableCount = items.filter(
+		item => item.status === "pending" || item.status === "error"
+	).length;
 
 	return {
-		files,
-		status,
+		files: items,
 		message,
-		showClearDialog,
-		inputRef,
+		summary,
 		addFiles,
+		addRejectedFiles,
 		removeFile,
+		clearCompleted,
 		handleUpload,
-		handleClear,
-		handleClearConfirm,
-		setShowClearDialog,
-		busy
+		busy,
+		uploadableCount
 	};
 }
-

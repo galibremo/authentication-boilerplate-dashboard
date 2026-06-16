@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api/client";
 
 import {
+	KnowledgeBaseUploadResponse,
 	KnowledgeBaseResponse,
 	UpdateKnowledgeBaseMessagePayload
 } from "@/features/knowledge-base/types/knowledge-base.types";
@@ -23,21 +24,23 @@ export async function updateKnowledgeBaseMessage(
 	});
 }
 
-export async function uploadKnowledgeBaseFile(file: File): Promise<ApiResponse<void>> {
+export async function uploadKnowledgeBaseFile(file: File): Promise<KnowledgeBaseUploadResponse> {
 	const formData = new FormData();
 	formData.append("data", file);
 
-	return apiClient<ApiResponse<void>>({
+	return apiClient<KnowledgeBaseUploadResponse>({
 		method: "POST",
 		url: apiRoute.knowledgeBaseUpload,
-		data: formData,
-		headers: { "Content-Type": "multipart/form-data" }
+		data: formData
 	});
 }
 
-export async function uploadKnowledgeBaseFiles(files: File[]): Promise<number> {
+export async function uploadKnowledgeBaseFiles(
+	files: File[]
+): Promise<KnowledgeBaseUploadResponse[]> {
+	const responses: KnowledgeBaseUploadResponse[] = [];
 	for (const file of files) {
-		await uploadKnowledgeBaseFile(file);
+		responses.push(await uploadKnowledgeBaseFile(file));
 	}
-	return files.length;
+	return responses;
 }
