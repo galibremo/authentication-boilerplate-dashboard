@@ -9,13 +9,7 @@ export const KNOWLEDGE_BASE_UPLOAD_MAX_SIZE = 10 * 1024 * 1024;
 export const KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS = [
 	".txt",
 	".md",
-	".markdown",
 	".csv",
-	".json",
-	".jsonl",
-	".ndjson",
-	".xml",
-	".tsv",
 	".pdf",
 	".doc",
 	".docx"
@@ -23,14 +17,8 @@ export const KNOWLEDGE_BASE_ACCEPTED_EXTENSIONS = [
 
 export const KNOWLEDGE_BASE_DROPZONE_ACCEPT = {
 	"text/plain": [".txt"],
-	"text/markdown": [".md", ".markdown"],
+	"text/markdown": [".md"],
 	"text/csv": [".csv"],
-	"text/xml": [".xml"],
-	"text/tab-separated-values": [".tsv"],
-	"application/json": [".json"],
-	"application/ld+json": [".json"],
-	"application/x-ndjson": [".jsonl", ".ndjson"],
-	"application/xml": [".xml"],
 	"application/pdf": [".pdf"],
 	"application/msword": [".doc"],
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]

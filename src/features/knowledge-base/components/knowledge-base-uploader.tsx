@@ -5,7 +5,6 @@ import {
 	CheckCircle2,
 	CloudUpload,
 	File,
-	FileJson,
 	FileSpreadsheet,
 	FileText,
 	FileType,
@@ -31,12 +30,9 @@ import {
 function getFileIcon(name: string) {
 	const ext = name.split(".").pop()?.toLowerCase();
 	const cls = "h-4 w-4 shrink-0 text-muted-foreground";
-	if (ext === "json" || ext === "jsonl" || ext === "ndjson") return <FileJson className={cls} />;
-	if (ext === "csv" || ext === "tsv") return <FileSpreadsheet className={cls} />;
+	if (ext === "csv") return <FileSpreadsheet className={cls} />;
 	if (ext === "pdf" || ext === "doc" || ext === "docx") return <FileType className={cls} />;
-	if (ext === "txt" || ext === "md" || ext === "markdown" || ext === "xml") {
-		return <FileText className={cls} />;
-	}
+	if (ext === "txt" || ext === "md") return <FileText className={cls} />;
 	return <File className={cls} />;
 }
 
