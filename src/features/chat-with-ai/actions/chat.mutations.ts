@@ -35,8 +35,20 @@ export function useSendMessageMutation(sessionId: string) {
 				queryClient.setQueryData(chatKeys.history(sessionId), context.previousMessages);
 			}
 		},
-		onSettled: async () => {
-			await queryClient.invalidateQueries({ queryKey: chatKeys.history(sessionId) });
+		onSuccess: (data) => {
+			const aiMessage: ChatMessage = {
+				id: Date.now() + 1,
+				sessionId,
+				message: {
+					type: "ai",
+					content: data.text,
+				},
+			};
+
+			queryClient.setQueryData<ChatMessage[]>(chatKeys.history(sessionId), (old) => [
+				...(old ?? []),
+				aiMessage,
+			]);
 		},
 	});
 }
